@@ -116,16 +116,15 @@ public class DrugService {
                 break;
             case "노인주의":
                 url = oldTabooUrl;
-                break;
         }
 
         // null인 경우 빈 값을 전달, int 변수를 받아야 하는 경우는 각각의 기본 값을 전달
         return url + "?" + URLEncoder.encode("serviceKey", "UTF-8") + "=" + drugKey + /*Service Key*/
                 "&" + URLEncoder.encode("typeName", "UTF-8") + "=" + URLEncoder.encode(type, "UTF-8") +
-                "&" + URLEncoder.encode("ingrCode", "UTF-8") + "=" + URLEncoder.encode(drugRequest.getDurCode() == null ? "" : drugRequest.getDurCode(), "UTF-8") + /*DUR성분코드*/
+                "&" + URLEncoder.encode("ingrCode", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8") + /*DUR성분코드*/
                 "&" + URLEncoder.encode("itemName", "UTF-8") + "=" + URLEncoder.encode(drugRequest.getDrugName(), "UTF-8") + /*품목명*/
-                "&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(drugRequest.getPageNum() == 0 ? 1 : drugRequest.getPageNum()), "UTF-8") + /*페이지 번호, 기본 값 1*/
-                "&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(drugRequest.getResultCount() == 0 ? 1 : drugRequest.getResultCount()), "UTF-8") + /*한 페이지 결과 수, 기본 값 1*/
+                "&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(1), "UTF-8") + /*페이지 번호, 기본 값 1*/
+                "&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(1), "UTF-8") + /*한 페이지 결과 수, 기본 값 1*/
                 "&" + URLEncoder.encode("start_change_date", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8") + /*변경일자시작일*/
                 "&" + URLEncoder.encode("end_change_date", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8") + /*변경일자종료일*/
                 "&" + URLEncoder.encode("type", "UTF-8") + "=" + URLEncoder.encode("xml", "UTF-8");
