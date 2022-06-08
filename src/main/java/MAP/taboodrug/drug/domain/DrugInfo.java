@@ -11,9 +11,8 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @Getter
 @Entity
-public class Drug {
+public class DrugInfo {
     @Id
-    @Column(name = "itemName")
     private String itemName;
 
     private String chart;
@@ -43,24 +42,6 @@ public class Drug {
     private String oldProhbtContent;
 
     private String oldRemark;
-
-    public Drug(String itemName, String chart, String formName, String className, String mixtureItemName, String mixtureClassName, String mixtureChart, String prohbtContent, String remark, boolean pregnancyBan, String pregnancyProhbtContent, String pregnancyRemark, boolean oldBan, String oldProhbtContent, String oldRemark) {
-        this.itemName = itemName;
-        this.chart = chart;
-        this.formName = formName;
-        this.className = className;
-        this.mixtureItemName = mixtureItemName;
-        this.mixtureClassName = mixtureClassName;
-        this.mixtureChart = mixtureChart;
-        this.prohbtContent = prohbtContent;
-        this.remark = remark;
-        this.pregnancyBan = pregnancyBan;
-        this.pregnancyProhbtContent = pregnancyProhbtContent;
-        this.pregnancyRemark = pregnancyRemark;
-        this.oldBan = oldBan;
-        this.oldProhbtContent = oldProhbtContent;
-        this.oldRemark = oldRemark;
-    }
 
     public void setDrugName(String itemName) {
         this.itemName = itemName;
