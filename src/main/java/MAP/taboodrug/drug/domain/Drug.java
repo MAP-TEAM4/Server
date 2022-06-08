@@ -67,15 +67,14 @@ public class Drug {
     }
 
     public void setDrugInfo(ArrayList<String> info) {
-        this.itemName = info.get(0);
-        this.chart = info.get(1);
-        this.formName = info.get(2);
-        this.className = info.get(3);
-        this.mixtureItemName = info.get(4);
-        this.mixtureClassName = info.get(5);
-        this.mixtureChart = info.get(6);
-        this.prohbtContent = info.get(7);
-        this.remark = info.get(8);
+        this.chart = info.get(0);
+        this.formName = info.get(1);
+        this.className = info.get(2);
+        this.mixtureItemName = info.get(3);
+        this.mixtureClassName = info.get(4);
+        this.mixtureChart = info.get(5);
+        this.prohbtContent = info.get(6);
+        this.remark = info.get(7);
     }
 
     public void setPregInfo(ArrayList<String> info) {
