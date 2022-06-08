@@ -1,6 +1,9 @@
 package MAP.taboodrug.drug.service;
 
+import MAP.taboodrug.drug.domain.Drug;
 import MAP.taboodrug.drug.dto.DrugRequest;
+import MAP.taboodrug.drug.repository.DrugRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -18,8 +21,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,86 +43,64 @@ public class DrugService {
     @Value("${drugListKey}")
     private String drugKey;
 
+    private final DrugRepository drugRepository;
+
+    // Entity 객체를 JSON으로 변환해주는 매퍼
+    private final ObjectMapper objectMapper;
+
+    private final CommonService commonService;
+
     public String drugInfoList(DrugRequest drugRequest) throws Exception {
-        // TODO DB에 전달받은 약품 이름에 대한 정보가 있다면, 그대로 반환
-        // TODO 그렇지 않다면 setData() 호출
+        // DB에 전달받은 약품 이름에 대한 정보가 있다면, 그대로 반환
+        // 그렇지 않다면 setData() 호출
 
-        return setData(drugRequest);
-    }
+        Optional<Drug> drug = drugRepository.findDrugByItemName(drugRequest.getDrugName());
 
-    // priavte init & common methods
+        if (drug.isEmpty())
+            return setData(drugRequest);
 
-    private Document initDocument(String reqBuilder) throws Exception {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(reqBuilder);
-        doc.getDocumentElement().normalize();
-        return doc;
-    }
-
-    private Element initElement(Document doc) {
-        NodeList nList = doc.getElementsByTagName("body");
-        Node nNode = nList.item(0);
-        return (Element) nNode;
-    }
-
-    // 태그 값을 추출 - commons로 옮길까 ...
-    private String getTagValue(String tag, Element eElement) {
-        // 결과를 저장할 result
-        String result = "";
-
-        // 태그 값을 읽을 수 없는 경우는 해당 결과가 없다는 의미
-        if (eElement.getElementsByTagName(tag).item(0) == null) return null;
-
-        NodeList nlList = eElement.getElementsByTagName(tag).item(0).getChildNodes();
-
-        if (nlList.item(0) == null) return null;
-
-        result = nlList.item(0).getTextContent();
-
-        return result;
+        return objectMapper.writeValueAsString(drug);
     }
 
     // private methods
 
     // 병용금기 정보 조회 API 호출 후 필요한 정보 추출
-    private JSONObject parsingInfo(String result) throws Exception {
-        Element eElement = initElement(initDocument(result));
+    private ArrayList<String> parsingInfo(String result) throws Exception {
+        Element eElement = commonService.initElement(commonService.initDocument(result));
 
         if (checkCount(eElement) == 0) return null;
 
-        JSONObject jsonObject = new JSONObject();
+        ArrayList<String> resultList = new ArrayList<>();
+        resultList.add(commonService.getTagValue("ITEM_NAME", eElement));
+        resultList.add(commonService.getTagValue("CHART", eElement));
+        resultList.add(commonService.getTagValue("FORM_NAME", eElement));
+        resultList.add(commonService.getTagValue("CLASS_NAME", eElement));
+        resultList.add(commonService.getTagValue("MIXTURE_ITEM_NAME", eElement));
+        resultList.add(commonService.getTagValue("MIXTURE_CLASS_NAME", eElement));
+        resultList.add(commonService.getTagValue("MIXTURE_CHART", eElement));
+        resultList.add(commonService.getTagValue("PROHBT_CONTENT", eElement));
+        resultList.add(commonService.getTagValue("REMARK", eElement));
 
-        jsonObject.put("품목명", getTagValue("ITEM_NAME", eElement));
-        jsonObject.put("성상", getTagValue("CHART", eElement));
-        jsonObject.put("제형", getTagValue("FORM_NAME", eElement));
-        jsonObject.put("약효 분류", getTagValue("CLASS_NAME", eElement));
-        jsonObject.put("병용금기품목명", getTagValue("MIXTURE_ITEM_NAME", eElement));
-        jsonObject.put("병용금기약효분류", getTagValue("MIXTURE_CLASS_NAME", eElement));
-        jsonObject.put("금기내용", getTagValue("PROHBT_CONTENT", eElement));
-        jsonObject.put("비고", getTagValue("REMARK", eElement));
-        jsonObject.put("병용금기성상", getTagValue("MIXTURE_CHART", eElement));
-
-        return jsonObject;
+        return resultList;
     }
 
     // 임부금기, 노인주의 정보 조회 API 호출 후 해당사항이 있다면 정보 추출
-    private JSONObject parsingBan(String result) throws Exception {
-        Element eElement = initElement(initDocument(result));
+    private ArrayList<String> parsingBan(String result) throws Exception {
+        Element eElement = commonService.initElement(commonService.initDocument(result));
 
         if (checkCount(eElement) == 0) return null;
 
-        JSONObject jsonObject = new JSONObject();
+        ArrayList<String> resultList = new ArrayList<>();
 
-        jsonObject.put("금기 내용", getTagValue("PROHBT_CONTENT", eElement));
-        jsonObject.put("비고", getTagValue("REMARK", eElement));
+        resultList.add(commonService.getTagValue("PROHBT_CONTENT", eElement));
+        resultList.add(commonService.getTagValue("REMARK", eElement));
 
-        return jsonObject;
+        return resultList;
     }
 
     // 임부금기, 노인주의 정보 조회 API 호출 시, 해당 사항이 있는지 확인
     private int checkCount(Element element) {
-        return Integer.parseInt(Objects.requireNonNull(getTagValue("totalCount", element)));
+        return Integer.parseInt(Objects.requireNonNull(commonService.getTagValue("totalCount", element)));
     }
 
     // API 요청을 위한 URL 생성
@@ -150,19 +133,20 @@ public class DrugService {
 
     // 서버 최초 실행 시 1회 실행하여 해당 약품에 대한 모든 정보를 DB에 저장
     private String setData(DrugRequest drugRequest) throws Exception {
-        // TODO DB에 저장
+        ArrayList<String> drugInfo = parsingInfo(fillRequest("병용금기", drugRequest));
+        ArrayList<String> pregInfo = parsingBan(fillRequest("임부금기", drugRequest));
+        ArrayList<String> oldInfo = parsingBan(fillRequest("노인주의", drugRequest));
 
-        JSONObject jsonObject = new JSONObject();
+        Drug drug = new Drug();
 
-        JSONObject tmp = parsingInfo(fillRequest("병용금기", drugRequest));
-        jsonObject.put("약품 정보", tmp);
+        if (drugInfo == null) drug.setDrugName(drugRequest.getDrugName());
+        else drug.setDrugInfo(drugInfo);
+        drug.setPregInfo(pregInfo);
+        drug.setOldInfo(oldInfo);
 
-        tmp = parsingBan(fillRequest("임부금기", drugRequest));
-        jsonObject.put("임부금기 정보", tmp);
+        log.info("저장할 약품 이름: {}, 임부 금기 여부: {}, 노인 금기 여부: {}", drug.getItemName(), drug.isPregnancyBan(), drug.isOldBan());
+        drugRepository.save(drug);
 
-        tmp = parsingBan(fillRequest("노인주의", drugRequest));
-        jsonObject.put("노인주의 정보", tmp);
-
-        return jsonObject.toJSONString();
+        return objectMapper.writeValueAsString(drug);
     }
 }
