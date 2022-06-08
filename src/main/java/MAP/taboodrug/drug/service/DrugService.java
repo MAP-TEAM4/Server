@@ -1,24 +1,18 @@
 package MAP.taboodrug.drug.service;
 
-import MAP.taboodrug.drug.domain.Drug;
+import MAP.taboodrug.drug.domain.DrugInfo;
 import MAP.taboodrug.drug.dto.DrugRequest;
-import MAP.taboodrug.drug.repository.DrugRepository;
+import MAP.taboodrug.drug.repository.BasicDrugRepository;
+import MAP.taboodrug.drug.repository.DrugInfoRepository;
+import MAP.taboodrug.drug.util.DrugUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.util.*;
@@ -40,7 +34,9 @@ public class DrugService {
     @Value("${drugListKey}")
     private String drugKey;
 
-    private final DrugRepository drugRepository;
+    private final DrugInfoRepository drugInfoRepository;
+
+    private final BasicDrugRepository basicDrugRepository;
 
     // Entity 객체를 JSON으로 변환해주는 매퍼
     private final ObjectMapper objectMapper;
@@ -52,12 +48,23 @@ public class DrugService {
         // 그렇지 않다면 setData() 호출
         log.info("drugInfoList(), 입력받은 약품명: {}", drugRequest.getDrugName());
 
-        Optional<Drug> drug = drugRepository.findDrugByItemName(drugRequest.getDrugName());
+        Optional<DrugInfo> drug = drugInfoRepository.findDrugByItemName(drugRequest.getDrugName());
 
         if (drug.isEmpty())
             return setData(drugRequest);
 
         return objectMapper.writeValueAsString(drug);
+    }
+
+    // 자동완성을 위한 약품명 목록을 DB에 저장, 반환
+    public void initBasicDrug() {
+        DrugUtil drugUtil = new DrugUtil();
+        basicDrugRepository.saveAll(drugUtil.setBasicDrug());
+    }
+
+    public String basicDrugList() throws Exception {
+        log.info("basicDrugList()");
+        return objectMapper.writeValueAsString(basicDrugRepository.findAll());
     }
 
     // private methods
@@ -124,13 +131,13 @@ public class DrugService {
                 "&" + URLEncoder.encode("type", "UTF-8") + "=" + URLEncoder.encode("xml", "UTF-8");
     }
 
-    // 서버 최초 실행 시 1회 실행하여 해당 약품에 대한 모든 정보를 DB에 저장
+    // DB에 없는 약품에 대한 모든 정보를 DB에 저장
     private String setData(DrugRequest drugRequest) throws Exception {
         ArrayList<String> drugInfo = parsingInfo(fillRequest("병용금기", drugRequest));
         ArrayList<String> pregInfo = parsingBan(fillRequest("임부금기", drugRequest));
         ArrayList<String> oldInfo = parsingBan(fillRequest("노인주의", drugRequest));
 
-        Drug drug = new Drug();
+        DrugInfo drug = new DrugInfo();
 
         drug.setDrugName(drugRequest.getDrugName());
         if (drugInfo != null) drug.setDrugInfo(drugInfo);
@@ -138,7 +145,7 @@ public class DrugService {
         drug.setOldInfo(oldInfo);
 
         log.info("저장할 약품 이름: {}, 임부 금기 여부: {}, 노인 금기 여부: {}", drug.getItemName(), drug.isPregnancyBan(), drug.isOldBan());
-        drugRepository.save(drug);
+        drugInfoRepository.save(drug);
 
         return objectMapper.writeValueAsString(drug);
     }
