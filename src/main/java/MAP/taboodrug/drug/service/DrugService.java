@@ -21,10 +21,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -53,6 +50,7 @@ public class DrugService {
     public String drugInfoList(DrugRequest drugRequest) throws Exception {
         // DB에 전달받은 약품 이름에 대한 정보가 있다면, 그대로 반환
         // 그렇지 않다면 setData() 호출
+        log.info("drugInfoList(), 입력받은 약품명: {}", drugRequest.getDrugName());
 
         Optional<Drug> drug = drugRepository.findDrugByItemName(drugRequest.getDrugName());
 
@@ -71,7 +69,6 @@ public class DrugService {
         if (checkCount(eElement) == 0) return null;
 
         ArrayList<String> resultList = new ArrayList<>();
-        resultList.add(commonService.getTagValue("ITEM_NAME", eElement));
         resultList.add(commonService.getTagValue("CHART", eElement));
         resultList.add(commonService.getTagValue("FORM_NAME", eElement));
         resultList.add(commonService.getTagValue("CLASS_NAME", eElement));
@@ -121,12 +118,9 @@ public class DrugService {
         // null인 경우 빈 값을 전달, int 변수를 받아야 하는 경우는 각각의 기본 값을 전달
         return url + "?" + URLEncoder.encode("serviceKey", "UTF-8") + "=" + drugKey + /*Service Key*/
                 "&" + URLEncoder.encode("typeName", "UTF-8") + "=" + URLEncoder.encode(type, "UTF-8") +
-                "&" + URLEncoder.encode("ingrCode", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8") + /*DUR성분코드*/
                 "&" + URLEncoder.encode("itemName", "UTF-8") + "=" + URLEncoder.encode(drugRequest.getDrugName(), "UTF-8") + /*품목명*/
                 "&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(1), "UTF-8") + /*페이지 번호, 기본 값 1*/
                 "&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(1), "UTF-8") + /*한 페이지 결과 수, 기본 값 1*/
-                "&" + URLEncoder.encode("start_change_date", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8") + /*변경일자시작일*/
-                "&" + URLEncoder.encode("end_change_date", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8") + /*변경일자종료일*/
                 "&" + URLEncoder.encode("type", "UTF-8") + "=" + URLEncoder.encode("xml", "UTF-8");
     }
 
@@ -138,8 +132,8 @@ public class DrugService {
 
         Drug drug = new Drug();
 
-        if (drugInfo == null) drug.setDrugName(drugRequest.getDrugName());
-        else drug.setDrugInfo(drugInfo);
+        drug.setDrugName(drugRequest.getDrugName());
+        if (drugInfo != null) drug.setDrugInfo(drugInfo);
         drug.setPregInfo(pregInfo);
         drug.setOldInfo(oldInfo);
 
