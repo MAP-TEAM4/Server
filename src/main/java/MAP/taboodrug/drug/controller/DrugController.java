@@ -35,7 +35,8 @@ public class DrugController {
     @GetMapping("basicDrugList")
     public String basicDrugList() throws Exception {
         return drugService.basicDrugList();
-
+    }
+    
     @ApiOperation(value="약 상세 정보 조회", notes="전달받은 약품에 대한 상세 정보(주의사항, 부작용 등)를 JSON형태로 반환")
     @PostMapping("/detail")
     public String drugDetailInfoApi(@RequestBody DrugRequest drugRequest) throws Exception {
