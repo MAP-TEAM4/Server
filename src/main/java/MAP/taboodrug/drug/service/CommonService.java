@@ -78,4 +78,8 @@ public class CommonService {
 
         return result;
     }
+
+    public String convertNull(String str) {
+        return str == null ? "" : str;
+    }
 }
