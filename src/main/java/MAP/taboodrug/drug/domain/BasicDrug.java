@@ -14,15 +14,15 @@ public class BasicDrug {
     @Id
     private String itemName;
 
-    private String entpyName;
+    private String entpName;
 
     private String medicImageUrl;
 
     private String className;
 
-    public BasicDrug(String itemName, String entpyName, String medicImageUrl, String className) {
+    public BasicDrug(String itemName, String entpName, String medicImageUrl, String className) {
         this.itemName = itemName;
-        this.entpyName = entpyName;
+        this.entpName = entpName;
         this.medicImageUrl = medicImageUrl;
         this.className = className;
     }

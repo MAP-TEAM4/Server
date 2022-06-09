@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import java.util.ArrayList;
 
 @NoArgsConstructor
@@ -26,20 +27,26 @@ public class DrugInfo {
 
     private String mixtureChart;
 
+    @Lob
     private String prohbtContent;
 
+    @Lob
     private String remark;
 
     private boolean pregnancyBan;
 
+    @Lob
     private String pregnancyProhbtContent;
 
+    @Lob
     private String pregnancyRemark;
 
     private boolean oldBan;
 
+    @Lob
     private String oldProhbtContent;
 
+    @Lob
     private String oldRemark;
 
     public void setDrugName(String itemName) {

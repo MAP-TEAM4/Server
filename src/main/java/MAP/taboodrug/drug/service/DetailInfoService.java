@@ -2,11 +2,11 @@ package MAP.taboodrug.drug.service;
 
 import MAP.taboodrug.drug.domain.DetailInfo;
 import MAP.taboodrug.drug.dto.DrugRequest;
+import MAP.taboodrug.drug.repository.BasicDrugRepository;
 import MAP.taboodrug.drug.repository.DetailInfoRepository;
+import MAP.taboodrug.drug.repository.DrugInfoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
 
@@ -15,22 +15,12 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
-public class DetailInfoService {
+public class DetailInfoService extends CommonService {
 
-    @Value("${easyDrugInfoUrl}")
-    private String drugInfoUrl;
-
-    @Value("${easyDrugInfoKey}")
-    private String drugInfoKey;
-
-    private final CommonService commonService;
-
-    private final DetailInfoRepository detailInfoRepository;
-
-    // Entity 객체를 JSON으로 변환해주는 매퍼
-    private final ObjectMapper objectMapper;
+    public DetailInfoService(ObjectMapper objectMapper, DetailInfoRepository detailInfoRepository, DrugInfoRepository drugInfoRepository, BasicDrugRepository basicDrugRepository) {
+        super(objectMapper, detailInfoRepository, drugInfoRepository, basicDrugRepository);
+    }
 
     public String detailInfoList(DrugRequest drugRequest) throws Exception {
         // DB에 전달받은 약품 이름에 대한 정보가 있다면, 그대로 반환
@@ -53,18 +43,18 @@ public class DetailInfoService {
                 "&" + URLEncoder.encode("itemName", "UTF-8") + "=" + URLEncoder.encode(drugRequest.getDrugName(), "UTF-8") + /*품목명*/
                 "&" + URLEncoder.encode("type", "UTF-8") + "=" + URLEncoder.encode("xml", "UTF-8");
 
-        Element eElement = commonService.initElement(commonService.initDocument(result));
+        Element eElement = initElement(initDocument(result));
 
         ArrayList<String> resultList = new ArrayList<>();
 
-        resultList.add(commonService.getTagValue("entpName", eElement));
-        resultList.add(parsingValue(commonService.getTagValue("efcyQesitm", eElement)));
-        resultList.add(parsingValue(commonService.getTagValue("useMethodQesitm", eElement)));
-        resultList.add(parsingValue(commonService.getTagValue("atpnWarnQesitm", eElement)));
-        resultList.add(parsingValue(commonService.getTagValue("atpnQesitm", eElement)));
-        resultList.add(parsingValue(commonService.getTagValue("intrcQesitm", eElement)));
-        resultList.add(parsingValue(commonService.getTagValue("seQesitm", eElement)));
-        resultList.add(parsingValue(commonService.getTagValue("depositMethodQesitm", eElement)));
+        resultList.add(getTagValue("entpName", eElement));
+        resultList.add(parsingValue(getTagValue("efcyQesitm", eElement)));
+        resultList.add(parsingValue(getTagValue("useMethodQesitm", eElement)));
+        resultList.add(parsingValue(getTagValue("atpnWarnQesitm", eElement)));
+        resultList.add(parsingValue(getTagValue("atpnQesitm", eElement)));
+        resultList.add(parsingValue(getTagValue("intrcQesitm", eElement)));
+        resultList.add(parsingValue(getTagValue("seQesitm", eElement)));
+        resultList.add(parsingValue(getTagValue("depositMethodQesitm", eElement)));
 
         DetailInfo detailInfo = new DetailInfo();
 
