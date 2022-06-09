@@ -13,8 +13,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 @Slf4j
 @Service
 public class CommonService {
-    // priavte init & common methods
-
     public Document initDocument(String reqBuilder) throws Exception {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();

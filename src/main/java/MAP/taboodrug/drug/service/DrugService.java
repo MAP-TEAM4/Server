@@ -5,7 +5,6 @@ import MAP.taboodrug.drug.dto.DrugRequest;
 import MAP.taboodrug.drug.repository.BasicDrugRepository;
 import MAP.taboodrug.drug.repository.DrugInfoRepository;
 import MAP.taboodrug.drug.util.DrugUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,9 +42,9 @@ public class DrugService {
 
     private final CommonService commonService;
 
+    // DB에 전달받은 약품 이름에 대한 정보가 있다면, 그대로 반환
+    // 그렇지 않다면 setData() 호출
     public String drugInfoList(DrugRequest drugRequest) throws Exception {
-        // DB에 전달받은 약품 이름에 대한 정보가 있다면, 그대로 반환
-        // 그렇지 않다면 setData() 호출
         log.info("drugInfoList(), 입력받은 약품명: {}", drugRequest.getDrugName());
 
         Optional<DrugInfo> drug = drugInfoRepository.findDrugByItemName(drugRequest.getDrugName());
@@ -58,6 +57,7 @@ public class DrugService {
 
     // 자동완성을 위한 약품명 목록을 DB에 저장, 반환
     public void initBasicDrug() {
+        log.info("initBasicDrug(), 약품명 목록 초기화");
         DrugUtil drugUtil = new DrugUtil();
         basicDrugRepository.saveAll(drugUtil.setBasicDrug());
     }
@@ -122,7 +122,6 @@ public class DrugService {
                 url = oldTabooUrl;
         }
 
-        // null인 경우 빈 값을 전달, int 변수를 받아야 하는 경우는 각각의 기본 값을 전달
         return url + "?" + URLEncoder.encode("serviceKey", "UTF-8") + "=" + drugKey + /*Service Key*/
                 "&" + URLEncoder.encode("typeName", "UTF-8") + "=" + URLEncoder.encode(type, "UTF-8") +
                 "&" + URLEncoder.encode("itemName", "UTF-8") + "=" + URLEncoder.encode(drugRequest.getDrugName(), "UTF-8") + /*품목명*/

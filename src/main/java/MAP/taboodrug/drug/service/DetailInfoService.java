@@ -57,15 +57,14 @@ public class DetailInfoService {
 
         ArrayList<String> resultList = new ArrayList<>();
 
-        String str;
         resultList.add(commonService.getTagValue("entpName", eElement));
-        resultList.add((str = commonService.getTagValue("efcyQesitm", eElement)) == null ? "" : str.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", ""));
-        resultList.add((str = commonService.getTagValue("useMethodQesitm", eElement)) == null ? "" : str.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", ""));
-        resultList.add((str = commonService.getTagValue("atpnWarnQesitm", eElement)) == null ? "" : str.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", ""));
-        resultList.add((str = commonService.getTagValue("atpnQesitm", eElement)) == null ? "" : str.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", ""));
-        resultList.add((str = commonService.getTagValue("intrcQesitm", eElement)) == null ? "" : str.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", ""));
-        resultList.add((str = commonService.getTagValue("seQesitm", eElement)) == null ? "" : str.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", ""));
-        resultList.add((str = commonService.getTagValue("depositMethodQesitm", eElement)) == null ? "" : str.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", ""));
+        resultList.add(parsingValue(commonService.getTagValue("efcyQesitm", eElement)));
+        resultList.add(parsingValue(commonService.getTagValue("useMethodQesitm", eElement)));
+        resultList.add(parsingValue(commonService.getTagValue("atpnWarnQesitm", eElement)));
+        resultList.add(parsingValue(commonService.getTagValue("atpnQesitm", eElement)));
+        resultList.add(parsingValue(commonService.getTagValue("intrcQesitm", eElement)));
+        resultList.add(parsingValue(commonService.getTagValue("seQesitm", eElement)));
+        resultList.add(parsingValue(commonService.getTagValue("depositMethodQesitm", eElement)));
 
         DetailInfo detailInfo = new DetailInfo();
 
@@ -78,4 +77,8 @@ public class DetailInfoService {
         return objectMapper.writeValueAsString(detailInfo);
     }
 
+    private String parsingValue(String value) {
+        if (value == null) return "";
+        return value.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", "");
+    }
 }

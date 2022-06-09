@@ -41,18 +41,6 @@ public class DetailInfo {
     @Lob
     private String depositMethod;
 
-    public DetailInfo(String itemName, String entpName, String efficacy, String useMethod, String warn, String caution, String interact, String sideEffect, String depositMethod) {
-        this.itemName = itemName;
-        this.entpName = entpName;
-        this.efficacy = efficacy;
-        this.useMethod = useMethod;
-        this.warn = warn;
-        this.caution = caution;
-        this.interact = interact;
-        this.sideEffect = sideEffect;
-        this.depositMethod = depositMethod;
-    }
-
     public void setDrugName(String itemName) {
         this.itemName = itemName;
     }
