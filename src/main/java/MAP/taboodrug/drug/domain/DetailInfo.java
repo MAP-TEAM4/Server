@@ -18,8 +18,6 @@ public class DetailInfo {
     @Column(name = "itemName")
     private String itemName;
 
-    private String entpName;
-
     @Lob
     private String efficacy;
 
@@ -46,13 +44,12 @@ public class DetailInfo {
     }
 
     public void setDetailInfo(ArrayList<String> info) {
-        this.entpName = info.get(0);
-        this.efficacy = info.get(1);
-        this.useMethod = info.get(2);
-        this.warn = info.get(3);
-        this.caution = info.get(4);
-        this.interact = info.get(5);
-        this.sideEffect = info.get(6);
-        this.depositMethod = info.get(7);
+        this.efficacy = info.get(0);
+        this.useMethod = info.get(1);
+        this.warn = info.get(2);
+        this.caution = info.get(3);
+        this.interact = info.get(4);
+        this.sideEffect = info.get(5);
+        this.depositMethod = info.get(6);
     }
 }
