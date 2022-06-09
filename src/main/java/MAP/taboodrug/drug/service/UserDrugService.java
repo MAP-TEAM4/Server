@@ -17,9 +17,9 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class UserDrugService extends DrugInfoService {
-    ArrayList<String> mixture = new ArrayList<>();
-    ArrayList<Boolean> pregnancy = new ArrayList<>();
-    ArrayList<Boolean> old = new ArrayList<>();
+    ArrayList<String> mixture;
+    ArrayList<Boolean> pregnancy;
+    ArrayList<Boolean> old;
 
     public UserDrugService(ObjectMapper objectMapper, DetailInfoRepository detailInfoRepository, DrugInfoRepository drugInfoRepository, BasicDrugRepository basicDrugRepository) {
         super(objectMapper, detailInfoRepository, drugInfoRepository, basicDrugRepository);
@@ -29,15 +29,18 @@ public class UserDrugService extends DrugInfoService {
         log.info("infoList(), 약품명 목록: {}", userDrugRequest.getDrugs().toString());
 
         List<String> drugs = userDrugRequest.getDrugs();
+        mixture = new ArrayList<>();
+        pregnancy = new ArrayList<>();
+        old = new ArrayList<>();
 
         for (String drug : drugs) {
             Optional<DrugInfo> drugInfo = drugInfoRepository.findDrugByItemName(drug);
 
             if (drugInfo.isEmpty()) {
-                setList(drug);
+                setList(drug, drugs);
             } else {
                 DrugInfo drugInfoResult = drugInfo.get();
-                fillResult(drugInfoResult);
+                fillResult(drugInfoResult, drugs);
             }
         }
         JSONObject jsonObject = new JSONObject();
@@ -49,17 +52,17 @@ public class UserDrugService extends DrugInfoService {
     }
 
     // DB에 없는 약품에 대한 모든 정보를 DB에 저장
-    private void setList(String drugName) throws Exception {
+    private void setList(String drugName, List<String> drugs) throws Exception {
         DrugInfo drug = makeDrugData(drugName);
 
         log.info("저장할 약품 이름: {}, 임부 금기 여부: {}, 노인 금기 여부: {}", drug.getItemName(), drug.isPregnancyBan(), drug.isOldBan());
         drugInfoRepository.save(drug);
 
-        fillResult(drug);
+        fillResult(drug, drugs);
     }
 
-    private void fillResult(DrugInfo drugInfo) {
-        mixture.add(drugInfo.getMixtureItemName());
+    private void fillResult(DrugInfo drugInfo, List<String> drugs) {
+        mixture.add(drugs.contains(drugInfo.getMixtureItemName()) ? drugInfo.getMixtureItemName() : "null");
         pregnancy.add(drugInfo.isPregnancyBan());
         old.add(drugInfo.isOldBan());
     }
