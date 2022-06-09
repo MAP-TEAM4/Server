@@ -18,12 +18,10 @@ public class BasicDrug {
 
     private String medicImageUrl;
 
-    private String className;
 
-    public BasicDrug(String itemName, String entpName, String medicImageUrl, String className) {
+    public BasicDrug(String itemName, String entpName, String medicImageUrl) {
         this.itemName = itemName;
         this.entpName = entpName;
         this.medicImageUrl = medicImageUrl;
-        this.className = className;
     }
 }

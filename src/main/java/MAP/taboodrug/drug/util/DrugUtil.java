@@ -29,7 +29,7 @@ public class DrugUtil {
             while((line = br.readLine()) != null) {
                 String[] info = line.split(",");
 
-                BasicDrug basicDrug = new BasicDrug(info[0], info[1], info[2], info[3]);
+                BasicDrug basicDrug = new BasicDrug(info[0], info[1], info[2]);
 
                 result.add(basicDrug);
             }

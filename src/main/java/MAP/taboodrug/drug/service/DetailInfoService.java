@@ -13,7 +13,6 @@ import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
 
-import javax.swing.text.html.Option;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -23,8 +22,11 @@ import java.util.Optional;
 public class DetailInfoService extends CommonService {
     JSONObject jsonObject;
 
-    public DetailInfoService(ObjectMapper objectMapper, DetailInfoRepository detailInfoRepository, DrugInfoRepository drugInfoRepository, BasicDrugRepository basicDrugRepository) {
+    private final DrugInfoService drugInfoService;
+
+    public DetailInfoService(ObjectMapper objectMapper, DetailInfoRepository detailInfoRepository, DrugInfoRepository drugInfoRepository, BasicDrugRepository basicDrugRepository, DrugInfoService drugInfoService) {
         super(objectMapper, detailInfoRepository, drugInfoRepository, basicDrugRepository);
+        this.drugInfoService = drugInfoService;
     }
 
     public String detailInfoList(DrugRequest drugRequest) throws Exception {
@@ -39,7 +41,9 @@ public class DetailInfoService extends CommonService {
         if (detailInfo.isEmpty())
             setData(drugRequest);
 
-        return fillResult(drugRequest.getDrugName(), jsonObject);
+        jsonObject.put("itemName", drugRequest.getDrugName());
+
+        return fillResult(drugRequest.getDrugName());
     }
 
     // 서버 최초 실행 시 1회 실행하여 해당 약품에 대한 모든 정보를 DB에 저장
@@ -56,9 +60,7 @@ public class DetailInfoService extends CommonService {
 
         resultList.add(parsingValue(getTagValue("efcyQesitm", eElement)));
         resultList.add(parsingValue(getTagValue("useMethodQesitm", eElement)));
-        resultList.add(parsingValue(getTagValue("atpnWarnQesitm", eElement)));
         resultList.add(parsingValue(getTagValue("atpnQesitm", eElement)));
-        resultList.add(parsingValue(getTagValue("intrcQesitm", eElement)));
         resultList.add(parsingValue(getTagValue("seQesitm", eElement)));
         resultList.add(parsingValue(getTagValue("depositMethodQesitm", eElement)));
 
@@ -77,29 +79,70 @@ public class DetailInfoService extends CommonService {
     }
 
     // DB에 접근해서 반환해야 할 상세 정보 생성
-    private String fillResult(String drugName, JSONObject jsonObject) {
-        Optional<BasicDrug> basicDrug = basicDrugRepository.findBasicDrugByItemName(drugName);
+    private String fillResult(String drugName) throws Exception {
+        BasicDrug basicDrug = basicDrugRepository.findBasicDrugByItemName(drugName);
         Optional<DetailInfo> detailInfo = detailInfoRepository.findDetailInfoByItemName(drugName);
         Optional<DrugInfo> drugInfo = drugInfoRepository.findDrugByItemName(drugName);
 
-        if (basicDrug.isEmpty()) {
-
-        } else {
-
-        }
+        jsonObject.put("entpName", basicDrug.getEntpName());
+        jsonObject.put("medicImageUrl", basicDrug.getMedicImageUrl());
 
         if (detailInfo.isEmpty()) {
-
+            fillDetailInfo(drugName);
         } else {
-
+            DetailInfo drug = detailInfo.get();
+            jsonObject.put("efficacy",drug.getEfficacy());
+            jsonObject.put("useMethod", drug.getUseMethod());
+            jsonObject.put("caution",drug.getCaution());
+            jsonObject.put("sideEffect", drug.getSideEffect());
+            jsonObject.put("depositMethod",drug.getDepositMethod());
         }
 
         if (drugInfo.isEmpty()) {
-
+            jsonObject = drugInfoService.fillDrugInfo(drugName, jsonObject);
         } else {
-
+            DrugInfo drug = drugInfo.get();
+            jsonObject = drugInfoService.fillObject(drug, jsonObject);
         }
 
         return jsonObject.toJSONString();
+    }
+
+    private void fillDetailInfo(String drugName) throws Exception {
+        String result = drugInfoUrl + "?" + URLEncoder.encode("serviceKey", "UTF-8") + "=" + drugInfoKey + /*Service Key*/
+                "&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(1), "UTF-8") + /*페이지 번호, 기본 값 1*/
+                "&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(1), "UTF-8") + /*한 페이지 결과 수, 기본 값 1*/
+                "&" + URLEncoder.encode("itemName", "UTF-8") + "=" + URLEncoder.encode(drugName, "UTF-8") + /*품목명*/
+                "&" + URLEncoder.encode("type", "UTF-8") + "=" + URLEncoder.encode("xml", "UTF-8");
+
+        Element eElement = initElement(initDocument(result));
+
+        ArrayList<String> resultList = new ArrayList<>();
+
+        String tmp = convertNull(parsingValue(getTagValue("efficacy", eElement)));
+        jsonObject.put("efficacy", tmp);
+        resultList.add(tmp);
+
+        tmp = convertNull(parsingValue(getTagValue("useMethod", eElement)));
+        jsonObject.put("useMethod", tmp);
+        resultList.add(tmp);
+
+        tmp = convertNull(parsingValue(getTagValue("caution", eElement)));
+        jsonObject.put("caution", parsingValue(getTagValue("caution", eElement)));
+        resultList.add(tmp);
+
+        tmp = convertNull(parsingValue(getTagValue("sideEffect", eElement)));
+        jsonObject.put("sideEffect", parsingValue(getTagValue("sideEffect", eElement)));
+        resultList.add(tmp);
+
+        tmp = convertNull(parsingValue(getTagValue("depositMethod", eElement)));
+        jsonObject.put("depositMethod", parsingValue(getTagValue("depositMethod", eElement)));
+        resultList.add(tmp);
+
+        DetailInfo detailInfo = new DetailInfo();
+        detailInfo.setDrugName(drugName);
+        detailInfo.setDetailInfo(resultList);
+
+        detailInfoRepository.save(detailInfo);
     }
 }

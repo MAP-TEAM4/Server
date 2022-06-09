@@ -25,13 +25,7 @@ public class DetailInfo {
     private String useMethod;
 
     @Lob
-    private String warn;
-
-    @Lob
     private String caution;
-
-    @Lob
-    private String interact;
 
     @Lob
     private String sideEffect;
@@ -46,10 +40,8 @@ public class DetailInfo {
     public void setDetailInfo(ArrayList<String> info) {
         this.efficacy = info.get(0);
         this.useMethod = info.get(1);
-        this.warn = info.get(2);
-        this.caution = info.get(3);
-        this.interact = info.get(4);
-        this.sideEffect = info.get(5);
-        this.depositMethod = info.get(6);
+        this.caution = info.get(2);
+        this.sideEffect = info.get(3);
+        this.depositMethod = info.get(4);
     }
 }

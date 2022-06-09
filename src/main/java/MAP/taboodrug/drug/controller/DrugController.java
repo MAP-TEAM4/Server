@@ -20,20 +20,14 @@ public class DrugController {
     private final DetailInfoService detailInfoService;
     private final UserDrugService userDrugService;
 
-    @ApiOperation(value="약 정보 조회", notes="전달받은 약품에 대한 정보를 JSON형태로 반환")
-    @PostMapping("/info")
-    public String drugInfoApi(@RequestBody DrugRequest drugRequest) throws Exception {
-        return drugInfoService.drugInfoList(drugRequest);
-    }
-
     @ApiOperation(value="약품명 목록 DB 초기화", notes="DB에 약품명 목록을 초기화, 호출할 일 X")
     @GetMapping("/init")
     public void init() {
         drugInfoService.initBasicDrug();
     }
 
-    @ApiOperation(value="약품명 목록 조회", notes="약품명 목록을 반환, 자동완성 기능에 사용 가능")
-    @GetMapping("basicDrugList")
+    @ApiOperation(value="약품명 목록 조회", notes="약품명 목록을 반환, 자동완성 기능에 사용")
+    @GetMapping("/basicDrugList")
     public String basicDrugList() throws Exception {
         return drugInfoService.basicDrugList();
     }

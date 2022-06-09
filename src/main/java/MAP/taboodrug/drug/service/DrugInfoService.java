@@ -8,6 +8,7 @@ import MAP.taboodrug.drug.repository.DrugInfoRepository;
 import MAP.taboodrug.drug.util.DrugUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
 
@@ -30,8 +31,10 @@ public class DrugInfoService extends CommonService {
 
         Optional<DrugInfo> drug = drugInfoRepository.findDrugByItemName(drugRequest.getDrugName());
 
-        if (drug.isEmpty())
+        if (drug.isEmpty()) {
+            log.info("drugInfo DB에 {} 없음, setData() 호출", drugRequest.getDrugName());
             return setData(drugRequest.getDrugName());
+        }
 
         return objectMapper.writeValueAsString(drug);
     }
@@ -57,30 +60,19 @@ public class DrugInfoService extends CommonService {
         if (checkCount(eElement) == 0) return null;
 
         ArrayList<String> resultList = new ArrayList<>();
-        resultList.add(getTagValue("CHART", eElement));
-        resultList.add(getTagValue("FORM_NAME", eElement));
-        resultList.add(getTagValue("CLASS_NAME", eElement));
-        resultList.add(getTagValue("MIXTURE_ITEM_NAME", eElement));
-        resultList.add(getTagValue("MIXTURE_CLASS_NAME", eElement));
-        resultList.add(getTagValue("MIXTURE_CHART", eElement));
-        resultList.add(getTagValue("PROHBT_CONTENT", eElement));
-        resultList.add(getTagValue("REMARK", eElement));
+        resultList.add(convertNull(getTagValue("MIXTURE_ITEM_NAME", eElement)));
+        resultList.add(convertNull(getTagValue("PROHBT_CONTENT", eElement)));
 
         return resultList;
     }
 
     // 임부금기, 노인주의 정보 조회 API 호출 후 해당사항이 있다면 정보 추출
-    public ArrayList<String> parsingBan(String result) throws Exception {
+    public String parsingBan(String result) throws Exception {
         Element eElement = initElement(initDocument(result));
 
         if (checkCount(eElement) == 0) return null;
 
-        ArrayList<String> resultList = new ArrayList<>();
-
-        resultList.add(getTagValue("PROHBT_CONTENT", eElement));
-        resultList.add(getTagValue("REMARK", eElement));
-
-        return resultList;
+        return getTagValue("PROHBT_CONTENT", eElement);
     }
 
     // 임부금기, 노인주의 정보 조회 API 호출 시, 해당 사항이 있는지 확인
@@ -123,8 +115,8 @@ public class DrugInfoService extends CommonService {
 
     public DrugInfo makeDrugData(String drugName) throws Exception {
         ArrayList<String> drugInfo = parsingInfo(fillRequest("병용금기", drugName));
-        ArrayList<String> pregInfo = parsingBan(fillRequest("임부금기", drugName));
-        ArrayList<String> oldInfo = parsingBan(fillRequest("노인주의", drugName));
+        String pregInfo = parsingBan(fillRequest("임부금기", drugName));
+        String oldInfo = parsingBan(fillRequest("노인주의", drugName));
 
         DrugInfo drug = new DrugInfo();
 
@@ -133,6 +125,25 @@ public class DrugInfoService extends CommonService {
         drug.setPregInfo(pregInfo);
         drug.setOldInfo(oldInfo);
 
+        drugInfoRepository.save(drug);
+
         return drug;
+    }
+
+    public JSONObject fillDrugInfo(String drugName, JSONObject jsonObject) throws Exception {
+        DrugInfo drug = makeDrugData(drugName);
+
+        return fillObject(drug, jsonObject);
+    }
+
+    public JSONObject fillObject(DrugInfo drug, JSONObject jsonObject) {
+        jsonObject.put("mixtureItemName", drug.getMixtureItemName());
+        jsonObject.put("prohbtContent", drug.getProhbtContent());
+        jsonObject.put("pregnancyBan", drug.isPregnancyBan());
+        jsonObject.put("pregnancyProhbtContent", drug.getPregnancyProhbtContent());
+        jsonObject.put("oldBan", drug.isOldBan());
+        jsonObject.put("oldProhbtContent", drug.getOldProhbtContent());
+
+        return jsonObject;
     }
 }
